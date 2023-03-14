@@ -27,7 +27,7 @@ module Gelauto
           index[path][ast.location.name.line] = md
 
           # point to start of method
-          index[path][ast.location.end.line] = ast.location.name.line
+          index[path][end_loc(ast.loc.node)] = ast.location.name.line
 
         when :class, :module
           const_name = ast.children.first.children.last
@@ -39,6 +39,15 @@ module Gelauto
       end
 
       visit_children(path, ast, nesting)
+    end
+
+    def end_loc(node)
+      # handle endless methods correctly
+      if node.type == :def && !node.loc.end
+        node.loc.expression.end
+      else
+        node.loc.end
+      end
     end
 
     def find(path, lineno)
